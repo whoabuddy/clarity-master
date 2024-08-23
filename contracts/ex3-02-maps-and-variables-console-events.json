@@ -1,0 +1,138 @@
+[
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "\"TEST CASES\""
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "u0"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "u0"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some u1)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "u1"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some u2)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "u2"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some u1)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "u1"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some u2)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some u1)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-02-maps-and-variables",
+      "topic": "print",
+      "value": "(some 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)"
+    }
+  }
+]

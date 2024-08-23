@@ -1,0 +1,34 @@
+[
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-01-maps-and-variables",
+      "topic": "print",
+      "value": "\"TEST CASES\""
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-01-maps-and-variables",
+      "topic": "print",
+      "value": "{ notification: \"user-info-updated\", payload: (some { age: u25, name: \"Alice\" }) }"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-01-maps-and-variables",
+      "topic": "print",
+      "value": "{ get-profile: (some { age: u25, name: \"Alice\" }), get-profile-age: (some u25), get-profile-info: (ok \"Hello, Alice!\nHow does it feel to be 25 years old?\"), get-profile-name: (some \"Alice\") }"
+    }
+  },
+  {
+    "type": "contract_event",
+    "contract_event": {
+      "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex3-01-maps-and-variables",
+      "topic": "print",
+      "value": "{ get-profile: none, get-profile-age: none, get-profile-info: (ok \"User not found. We have no idea what your name is or how old you are. Maybe you'd share it with us?\"), get-profile-name: none }"
+    }
+  }
+]
