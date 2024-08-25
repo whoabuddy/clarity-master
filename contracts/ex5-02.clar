@@ -1,17 +1,14 @@
 
 ;; title: ex5-02
-;; version:
+;; version: 1.0.0
 ;; summary:
-;; description:
-
-;; traits
-;;
-
-;; token definitions
-;;
 
 ;; constants
 ;;
+(define-constant CONTRACT_OWNER tx-sender)
+(define-constant SELF (as-contract tx-sender))
+(define-constant ERR_NOT_OWNER (err u403))
+(define-constant ERR_INSUFFICIENT_FUNDS (err u404))
 
 ;; data vars
 ;;
@@ -22,27 +19,42 @@
 ;; public functions
 ;;
 
+(define-public (deposit (amount uint))
+  (begin
+    (print  { notifcation: "deposit", payload: { amount: amount, contract-caller: contract-caller, tx-sender: tx-sender } })
+    (stx-transfer? amount tx-sender SELF)
+  )
+)
+
+(define-public (withdraw (amount uint))
+  (begin
+    (asserts! (check-owner true) ERR_NOT_OWNER)
+    (asserts! (> (stx-get-balance SELF) amount) ERR_INSUFFICIENT_FUNDS)
+    (print  { notifcation: "withdraw", payload: { amount: amount, contract-caller: contract-caller, tx-sender: tx-sender } })
+    (as-contract (stx-transfer? amount SELF CONTRACT_OWNER))
+  )
+)
+
 ;; read only functions
 ;;
 
 ;; private functions
 ;;
 
-;; 10.  Implement a public function called withdraw that allows the contract owner to withdraw funds
-;; from the contract. Use a private function to check if the caller is the owner.
-
-(define-constant CONTRACT_OWNER tx-sender)
-
-;; could argue this as read-only too
-(define-private (check-owner)
-  ;; Your code here
+(define-private (check-owner (strict bool))
+  (if strict
+    (is-eq CONTRACT_OWNER contract-caller)
+    (is-eq CONTRACT_OWNER tx-sender)
+  )
 )
 
-(define-public (withdraw (amount uint))
-  ;; Your code here
-)
+;; fund contract
+(stx-transfer? u10000000 tx-sender SELF)
 
-;; Test cases (NOTE: change `.your-contract` to the name of your contract, eg `contract-0`, etc)
-(stx-transfer? u100 tx-sender .your-contract) ;; transfer funds to the contract for testing withdraw
-(contract-call? .your-contract withdraw u100) ;; Should succeed if called by owner
-(as-contract (contract-call? .your-contract withdraw u100)) ;; Should fail
+
+
+
+
+
+
+
