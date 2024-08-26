@@ -35,6 +35,15 @@ path = 'contracts/ex5-02.clar'
 clarity_version = 2
 epoch = 2.5
 
+[contracts.ex6-01]
+path = 'contracts/ex6-01.clar'
+clarity_version = 2
+epoch = 2.5
+
+[contracts.ex6-02]
+path = 'contracts/ex6-02.clar'
+clarity_version = 2
+epoch = 2.5
 [repl.analysis]
 passes = ['check_checker']
 
