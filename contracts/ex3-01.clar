@@ -1,5 +1,5 @@
 
-;; title: ex3-01-maps-and-variables
+;; title: ex3-01
 ;; version: 1.0.0
 ;; summary: Storing basic user profiles on-chain
 

@@ -1,5 +1,5 @@
 
-;; title: ex3-02-maps-and-variables
+;; title: ex3-02
 ;; version: 1.0.0
 ;; summary: Simple voting contract.
 

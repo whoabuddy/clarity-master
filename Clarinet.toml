@@ -5,13 +5,14 @@ authors = []
 telemetry = false
 cache_dir = './.cache'
 requirements = []
-[contracts.ex3-01-maps-and-variables]
-path = 'contracts/ex3-01-maps-and-variables.clar'
+
+[contracts.ex3-01]
+path = 'contracts/ex3-01.clar'
 clarity_version = 2
 epoch = 2.5
 
-[contracts.ex3-02-maps-and-variables]
-path = 'contracts/ex3-02-maps-and-variables.clar'
+[contracts.ex3-02]
+path = 'contracts/ex3-02.clar'
 clarity_version = 2
 epoch = 2.5
 
@@ -44,6 +45,7 @@ epoch = 2.5
 path = 'contracts/ex6-02.clar'
 clarity_version = 2
 epoch = 2.5
+
 [repl.analysis]
 passes = ['check_checker']
 
