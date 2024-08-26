@@ -1,7 +1,7 @@
 
 ;; title: ex5-02
 ;; version: 1.0.0
-;; summary:
+;; summary: So much to do, so much to see, so what's wrong with taking the back streets?
 
 ;; constants
 ;;
@@ -9,12 +9,6 @@
 (define-constant SELF (as-contract tx-sender))
 (define-constant ERR_NOT_OWNER (err u403))
 (define-constant ERR_INSUFFICIENT_FUNDS (err u404))
-
-;; data vars
-;;
-
-;; data maps
-;;
 
 ;; public functions
 ;;
@@ -37,6 +31,9 @@
 
 ;; read only functions
 ;;
+(define-read-only (get-contract-balance)
+  (stx-get-balance SELF)
+)
 
 ;; private functions
 ;;
@@ -49,12 +46,4 @@
 )
 
 ;; fund contract
-(stx-transfer? u10000000 tx-sender SELF)
-
-
-
-
-
-
-
-
+(deposit u10000000)
