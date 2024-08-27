@@ -1,8 +1,7 @@
 
 ;; title: ex7-sip010
-;; version:
-;; summary:
-;; description:
+;; version: 1.0.0
+;; summary: local sip-010 trait
 
 ;; traits
 ;;
@@ -31,25 +30,3 @@
     (get-token-uri () (response (optional (string-utf8 256)) uint))
   )
 )
-
-;; token definitions
-;;
-
-;; constants
-;;
-
-;; data vars
-;;
-
-;; data maps
-;;
-
-;; public functions
-;;
-
-;; read only functions
-;;
-
-;; private functions
-;;
-
