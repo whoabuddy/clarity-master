@@ -15,6 +15,10 @@
 ;;
 (define-constant ERR_UNAUTHORIZED (err u401))
 (define-constant ERR_BEFORE_FIRST_ROUND (err u402))
+(define-constant ERR_ROUND_NOT_OVER (err u403))
+(define-constant ERR_WINNER_NOT_SELECTED (err u404))
+(define-constant ERR_WINNER_ALREADY_SELECTED (err u405))
+(define-constant ERR_ROUND_ALREADY_CLAIMED (err u406))
 
 ;; data vars
 ;;
@@ -37,7 +41,8 @@
     firstNftId: uint,
     stxInPool: uint,
     ticketsSold: uint,
-    winner: (optional principal)
+    winner: (optional principal),
+    claimed: bool
   }
 )
 
@@ -80,7 +85,8 @@
         firstNftId: tokenId,
         stxInPool: price,
         ticketsSold: u1,
-        winner: none
+        winner: none,
+        claimed: false
       })
       (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
         stxInPool: (+ (get stxInPool roundStats) price),
@@ -119,22 +125,56 @@
   )
 )
 
-(define-public (select-winner)
-  ;; we need to know current round
-  ;; if round is not over, return error
-  ;; if winner is already selected, return error
-  ;; closes out the old round
-  (ok true)
+(define-public (select-winner (round uint))
+  (let
+    (
+      (currentRound (get-lottery-round))
+      (roundStats (map-get? LotteryRounds round))
+      (userStats (map-get? UserStats contract-caller))
+      ;; select winner in a super unfair way
+      (winner contract-caller)
+    )
+    ;; if round is not over, return error
+    (asserts! (>= currentRound (+ round u1)) ERR_ROUND_NOT_OVER)
+    ;; if winner is already selected, return error
+    (asserts! (is-none (get winner roundStats)) ERR_WINNER_ALREADY_SELECTED)
+    ;; update round stats
+    (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
+      winner: (some winner)
+    }))
+    ;; update user stats
+    (map-set UserStats winner (merge (unwrap-panic userStats) {
+      totalWon: (+ (get totalWon userStats) (get stxInPool roundStats))
+    }))
+    ;; return winner
+    (ok winner)
+  )
 )
 
-(define-public (claim-prize)
-  ;; we need to know current round
-  ;; if round is not over, return error
-  ;; if winner is not selected, return error (or select one?)
-  ;; if winner is not caller, return error
-  ;; burn nft
-  ;; transfer prize to winner
-  (ok true)
+(define-public (claim-prize (round uint))
+  (let
+    (
+      (currentRound (get-lottery-round))
+      (roundStats (map-get? LotteryRounds round))
+      (winner (get winner roundStats))
+    )
+    ;; if round is not over, return error
+    (asserts! (>= currentRound (+ round u1)) ERR_ROUND_NOT_OVER)
+    ;; if winner is not selected, return error
+    (asserts! (is-some winner) ERR_WINNER_NOT_SELECTED)
+    ;; if winner is not caller, return error
+    (asserts! (is-eq contract-caller (unwrap-panic winner)) ERR_UNAUTHORIZED)
+    ;; if winner already claimed, return error
+    (asserts! (not (get claimed roundStats)) ERR_ROUND_ALREADY_CLAIMED)
+    ;; burn nft: skipping this as its more complex than expected
+    ;; - a user can purchase more than one ticket
+    ;; - providing an identifier is cumbersome
+    ;; - burning one if many doesn't help anything
+    ;; - cannot get into map without minting to start with
+    ;; - could do a "burn your own" function instead
+    ;; transfer prize to winner
+    (stx-transfer? SELF contract-caller (get stxInPool roundStats))
+  )
 )
 
 (define-public (transfer (tokenId uint) (sender principal) (recipient principal))
