@@ -75,11 +75,25 @@ path = 'contracts/ex8-sip009.clar'
 clarity_version = 2
 epoch = 2.5
 
-# [repl.analysis]
-# passes = ['check_checker']
+[contracts.ex9-01]
+path = 'contracts/ex9-01.clar'
+clarity_version = 2
+epoch = 2.5
 
-# [repl.analysis.check_checker]
-# strict = false
-# trusted_sender = false
-# trusted_caller = false
-# callee_filter = false
+[contracts.ex9-02]
+path = 'contracts/ex9-02.clar'
+clarity_version = 2
+epoch = 2.5
+
+[contracts.ex9-token-trait]
+path = 'contracts/ex9-token-trait.clar'
+clarity_version = 2
+epoch = 2.5
+[repl.analysis]
+passes = []
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
