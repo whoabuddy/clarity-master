@@ -5,7 +5,7 @@
 
 ;; traits
 ;;
-;; (impl-trait .ex8-sip009.nft-trait)
+(impl-trait .ex8-sip009.nft-trait)
 
 ;; token definitions
 ;;
@@ -13,11 +13,15 @@
 
 ;; constants
 ;;
+(define-constant ERR_UNAUTHORIZED (err u401))
+(define-constant ERR_BEFORE_FIRST_ROUND (err u402))
 
 ;; data vars
 ;;
 
-(define-data-var ticketCounter uint u0)
+(define-data-var lastId uint u1) ;; for NFT IDs
+
+(define-data-var ticketCount uint u0) ;; for total NFTs
 (define-data-var ticketPrice uint u1000000) ;; 1 STX
 
 (define-data-var lotteryPeriod uint u144) ;; 144 blocks (~1 day)s
@@ -58,9 +62,61 @@
 ;;
 
 (define-public (buy-ticket)
-  ;; we need to know current round
-  ;; mint nft to user
-  (ok true)
+  (let
+    (
+      (round (get-lottery-round))
+      (price (var-get ticketPrice))
+      (tokenId (var-get lastId))
+      (roundStats (map-get? LotteryRounds round))
+      (userStats (map-get? UserStats contract-caller))
+      (userRoundStats (map-get? UserRounds { user: contract-caller, round: round }))
+    )
+    ;; update data vars
+    (var-set lastId (+ tokenId u1))
+    (var-set ticketCount (+ (var-get ticketCount) u1))
+    ;; update lottery stats
+    (if (is-none roundStats)
+      (map-set LotteryRounds round {
+        firstNftId: tokenId,
+        stxInPool: price,
+        ticketsSold: u1,
+        winner: none
+      })
+      (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
+        stxInPool: (+ (get stxInPool roundStats) price),
+        ticketsSold: (+ (get ticketsSold roundStats) u1)
+      }))
+    )
+    ;; update user stats
+    (if (is-none userStats)
+      (map-set UserStats contract-caller {
+        lastRound: round,
+        totalStxSpent: price,
+        totalTickets: u1,
+        totalWon: u0
+      })
+      (map-set UserStats contract-caller (merge (unwrap-panic userStats) {
+        lastRound: round,
+        totalStxSpent: (+ (get totalStxSpent userStats) price),
+        totalTickets: (+ (get totalTickets userStats) u1)
+      }))
+    )
+    ;; update user round stats
+    (if (is-none userRoundStats)
+      (map-set UserRounds { user: contract-caller, round: round } {
+        tickets: u1,
+        stxSpent: price
+      })
+      (map-set UserRounds { user: contract-caller, round: round } (merge (unwrap-panic userRoundStats) {
+        tickets: (+ (get tickets userRoundStats) u1),
+        stxSpent: (+ (get stxSpent userRoundStats) price)
+      }))
+    )
+    ;; transfer ticket price to contract
+    (try! (stx-transfer? contract-caller SELF price))
+    ;; mint nft
+    (nft-mint? LotteryTicket tokenId contract-caller)
+  )
 )
 
 (define-public (select-winner)
@@ -81,11 +137,47 @@
   (ok true)
 )
 
+(define-public (transfer (tokenId uint) (sender principal) (recipient principal))
+  (let
+    (
+      (owner (nft-get-owner? LotteryTicket tokenId))
+    )
+    ;; make sure sender is caller
+    (asserts! (is-eq sender contract-caller) ERR_UNAUTHORIZED)
+    ;; make sure sender is nft owner
+    (asserts! (and (is-some owner) (is-eq (unwrap-panic owner) contract-caller)) ERR_UNAUTHORIZED)
+    ;; transfer nft
+    (nft-transfer? LotteryTicket tokenId sender recipient)
+  )
+)
+
 ;; read only functions
 ;;
+
 (define-read-only (get-lottery-round)
-  ;; ain't clairty math fun?
-  (ok (+ (/ (- block-height (var-get lotteryStartHeight)) (var-get lotteryPeriod)) u1))
+  ;; ain't clairty math a hoot?
+  (+ (/ (- block-height (var-get lotteryStartHeight)) (var-get lotteryPeriod)) u1)
+)
+
+(define-read-only (get-lottery-round-at-block (block uint))
+  (if (< block (var-get lotteryStartHeight))
+    ERR_BEFORE_FIRST_ROUND
+    (ok (+ (/ (- block (var-get lotteryStartHeight)) (var-get lotteryPeriod)) u1))
+  )
+)
+
+;; TODO: getters for each map
+
+(define-read-only (get-last-token-id)
+  (ok (- (var-get lastId) u1))
+)
+
+(define-read-only (get-token-uri)
+  (ok none)
+)
+
+(define-read-only (get-owner (tokenId uint))
+  (ok (nft-get-owner? LotteryTicket tokenId))
 )
 
 ;; private functions
