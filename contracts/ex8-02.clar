@@ -13,12 +13,16 @@
 
 ;; constants
 ;;
+
+(define-constant SELF (as-contract tx-sender))
+
 (define-constant ERR_UNAUTHORIZED (err u401))
 (define-constant ERR_BEFORE_FIRST_ROUND (err u402))
 (define-constant ERR_ROUND_NOT_OVER (err u403))
 (define-constant ERR_WINNER_NOT_SELECTED (err u404))
 (define-constant ERR_WINNER_ALREADY_SELECTED (err u405))
 (define-constant ERR_ROUND_ALREADY_CLAIMED (err u406))
+(define-constant ERR_NO_ROUND_DATA (err u407))
 
 ;; data vars
 ;;
@@ -89,8 +93,8 @@
         claimed: false
       })
       (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
-        stxInPool: (+ (get stxInPool roundStats) price),
-        ticketsSold: (+ (get ticketsSold roundStats) u1)
+        stxInPool: (+ (get stxInPool (unwrap-panic roundStats)) price),
+        ticketsSold: (+ (get ticketsSold (unwrap-panic roundStats)) u1)
       }))
     )
     ;; update user stats
@@ -103,8 +107,8 @@
       })
       (map-set UserStats contract-caller (merge (unwrap-panic userStats) {
         lastRound: round,
-        totalStxSpent: (+ (get totalStxSpent userStats) price),
-        totalTickets: (+ (get totalTickets userStats) u1)
+        totalStxSpent: (+ (get totalStxSpent (unwrap-panic userStats)) price),
+        totalTickets: (+ (get totalTickets (unwrap-panic userStats)) u1)
       }))
     )
     ;; update user round stats
@@ -114,12 +118,12 @@
         stxSpent: price
       })
       (map-set UserRounds { user: contract-caller, round: round } (merge (unwrap-panic userRoundStats) {
-        tickets: (+ (get tickets userRoundStats) u1),
-        stxSpent: (+ (get stxSpent userRoundStats) price)
+        tickets: (+ (get tickets (unwrap-panic userRoundStats)) u1),
+        stxSpent: (+ (get stxSpent (unwrap-panic userRoundStats)) price)
       }))
     )
     ;; transfer ticket price to contract
-    (try! (stx-transfer? contract-caller SELF price))
+    (try! (stx-transfer? price contract-caller SELF))
     ;; mint nft
     (nft-mint? LotteryTicket tokenId contract-caller)
   )
@@ -136,16 +140,26 @@
     )
     ;; if round is not over, return error
     (asserts! (>= currentRound (+ round u1)) ERR_ROUND_NOT_OVER)
+    ;; verify round existed
+    (asserts! (is-some roundStats) ERR_NO_ROUND_DATA)
     ;; if winner is already selected, return error
-    (asserts! (is-none (get winner roundStats)) ERR_WINNER_ALREADY_SELECTED)
+    (asserts! (is-none (get winner (unwrap-panic roundStats))) ERR_WINNER_ALREADY_SELECTED)
     ;; update round stats
     (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
       winner: (some winner)
     }))
-    ;; update user stats
-    (map-set UserStats winner (merge (unwrap-panic userStats) {
-      totalWon: (+ (get totalWon userStats) (get stxInPool roundStats))
-    }))
+    ;; update user 
+    (if (is-none userStats)
+      (map-set UserStats contract-caller {
+        lastRound: round,
+        totalStxSpent: u0,
+        totalTickets: u0,
+        totalWon: u0
+      })
+      (map-set UserStats winner (merge (unwrap-panic userStats) {
+        totalWon: (+ (get totalWon (unwrap-panic userStats)) (get stxInPool (unwrap-panic roundStats)))
+      }))
+    )
     ;; return winner
     (ok winner)
   )
@@ -157,15 +171,22 @@
       (currentRound (get-lottery-round))
       (roundStats (map-get? LotteryRounds round))
       (winner (get winner roundStats))
+      (caller contract-caller)
     )
     ;; if round is not over, return error
     (asserts! (>= currentRound (+ round u1)) ERR_ROUND_NOT_OVER)
+    ;; verify round existed
+    (asserts! (is-some roundStats) ERR_NO_ROUND_DATA)
     ;; if winner is not selected, return error
     (asserts! (is-some winner) ERR_WINNER_NOT_SELECTED)
     ;; if winner is not caller, return error
-    (asserts! (is-eq contract-caller (unwrap-panic winner)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq (some contract-caller) (unwrap-panic winner)) ERR_UNAUTHORIZED)
     ;; if winner already claimed, return error
-    (asserts! (not (get claimed roundStats)) ERR_ROUND_ALREADY_CLAIMED)
+    (asserts! (not (get claimed (unwrap-panic roundStats))) ERR_ROUND_ALREADY_CLAIMED)
+    ;; update round info
+    (map-set LotteryRounds round (merge (unwrap-panic roundStats) {
+      claimed: true
+    }))
     ;; burn nft: skipping this as its more complex than expected
     ;; - a user can purchase more than one ticket
     ;; - providing an identifier is cumbersome
@@ -173,7 +194,7 @@
     ;; - cannot get into map without minting to start with
     ;; - could do a "burn your own" function instead
     ;; transfer prize to winner
-    (stx-transfer? SELF contract-caller (get stxInPool roundStats))
+    (as-contract (stx-transfer? (get stxInPool (unwrap-panic roundStats)) SELF caller))
   )
 )
 
@@ -246,46 +267,86 @@
   (ok (- (var-get lastId) u1))
 )
 
-(define-read-only (get-token-uri)
-  (ok none)
+(define-read-only (get-token-uri (tokenId uint))
+  (ok (some (int-to-ascii tokenId)))
 )
 
 (define-read-only (get-owner (tokenId uint))
   (ok (nft-get-owner? LotteryTicket tokenId))
 )
 
+;; greedy read-only functions
+
+(define-read-only (get-config-info)
+  {
+    ticketCount: (get-ticket-count),
+    ticketPrice: (get-ticket-price),
+    lotteryPeriod: (get-lottery-period),
+    lotteryStartHeight: (get-lottery-start-height),
+    lastTokenId: (get-last-token-id),
+  }
+)
+
+(define-read-only (get-round-info (round uint) (user principal))
+  {
+    roundStats: (get-round-stats round),
+    userStats: (get-user-stats user),
+    userRoundStats: (get-user-round-stats user round),
+  }
+)
+
 ;; Test cases
 
-;; Buy a ticket successfully
-;; (contract-call? .lottery buy-ticket) ;; Should `mint` NFT to your address
-;; ticketCounter should be 1, lotteryPool should be 1000000
-
-;; Select a winner
-;; (contract-call? .lottery select-winner)
-;; Should return (ok principal) where principal is the winner's address
-
-;; Claim prize (assuming the caller is the winner)
-;; (contract-call? .lottery claim-prize) ;; Should return (ok u...)
-;; The winner's balance should increase by 3000000, lotteryPool should be 0
-
-;; Attempt to select winner when no tickets are sold
-;; First, reset the contract state or deploy a fresh instance
-;; (contract-call? .lottery select-winner)
-;; Should return an error (err u...) indicating no tickets sold
-
-;; Buy a ticket after a winner has been selected
-;; Assuming a winner has been selected in a previous test
-;; (contract-call? .lottery buy-ticket)
-;; Should return an error (err u...) or start a new lottery round
-
-;; Get current ticket price
-;; (contract-call? .lottery get-ticket-price)
-;; Should return price of ticket
-
-;; Get total tickets sold
-;; (contract-call? .lottery get-tickets-sold)
-;; Should return the number of tickets sold (uint)
-
-;; Get current lottery pool
-;; (contract-call? .lottery get-lottery-pool)
-;; Should return the current amount in the lottery pool (uint)
+;; >> (contract-call? .ex8-02 get-config-info)
+;; (tuple (lastTokenId (ok u0)) (lotteryPeriod (ok u144)) (lotteryStartHeight (ok u0)) (ticketCount (ok u0)) (ticketPrice (ok u1000000)))
+;; >> (contract-call? .ex8-02 get-lottery-round)
+;; u1
+;; >> ::advance_chain_tip 144
+;; 144 blocks simulated, new height: 145
+;; >> (contract-call? .ex8-02 get-lottery-round)
+;; u2
+;; >> (contract-call? .ex8-02 buy-ticket)
+;; Events emitted
+;; {"type":"stx_transfer_event","stx_transfer_event":{"sender":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02","amount":"1000000","memo":""}}
+;; {"type":"nft_mint_event","nft_mint_event":{"asset_identifier":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02::LotteryTicket","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM","value":"u1"}}
+;; (ok true)
+;; >> (contract-call? .ex8-02 buy-ticket)
+;; Events emitted
+;; {"type":"stx_transfer_event","stx_transfer_event":{"sender":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02","amount":"1000000","memo":""}}
+;; {"type":"nft_mint_event","nft_mint_event":{"asset_identifier":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02::LotteryTicket","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM","value":"u2"}}
+;; (ok true)
+;; >> ::set_tx_sender ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+;; tx-sender switched to ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+;; >> (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02 buy-ticket)
+;; Events emitted
+;; {"type":"stx_transfer_event","stx_transfer_event":{"sender":"ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02","amount":"1000000","memo":""}}
+;; {"type":"nft_mint_event","nft_mint_event":{"asset_identifier":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02::LotteryTicket","recipient":"ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5","value":"u3"}}
+;; (ok true)
+;; >> ::set_tx_sender ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+;; tx-sender switched to ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+;; >> (contract-call? .ex8-02 get-round-info u1 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+;; (tuple (roundStats (ok none)) (userRoundStats (ok none)) (userStats (ok (some (tuple (lastRound u2) (totalStxSpent u2000000) (totalTickets u2) (totalWon u0))))))
+;; >> (contract-call? .ex8-02 get-round-info u2 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+;; (tuple (roundStats (ok (some (tuple (claimed false) (firstNftId u1) (stxInPool u3000000) (ticketsSold u3) (winner none))))) (userRoundStats (ok (some (tuple (stxSpent u2000000) (tickets u2))))) (userStats (ok (some (tuple (lastRound u2) (totalStxSpent u2000000) (totalTickets u2) (totalWon u0))))))
+;; >> (contract-call? .ex8-02 select-winner u1)
+;; (err u407)
+;; >> (contract-call? .ex8-02 select-winner u2)
+;; (err u403)
+;; >> ::advance_chain_tip 144
+;; 144 blocks simulated, new height: 289
+;; >> (contract-call? .ex8-02 select-winner u2)
+;; (ok ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+;; >> (contract-call? .ex8-02 claim-prize u1)
+;; (err u407)
+;; >> (contract-call? .ex8-02 claim-prize u2)
+;; Events emitted
+;; {"type":"stx_transfer_event","stx_transfer_event":{"sender":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ex8-02","recipient":"ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM","amount":"3000000","memo":""}}
+;; (ok true)
+;; >> (contract-call? .ex8-02 get-round-info u2 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+;; (tuple (roundStats (ok (some (tuple (claimed false) (firstNftId u1) (stxInPool u3000000) (ticketsSold u3) (winner (some ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)))))) (userRoundStats (ok (some (tuple (stxSpent u2000000) (tickets u2))))) (userStats (ok (some (tuple (lastRound u2) (totalStxSpent u2000000) (totalTickets u2) (totalWon u3000000))))))
+;; >> ::advance_chain_tip 20736
+;; 20736 blocks simulated, new height: 21025
+;; >> (contract-call? .ex8-02 get-lottery-round)
+;; u147
+;; >> (contract-call? .ex8-02 claim-prize u2)
+;; (err u406)
