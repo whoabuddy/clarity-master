@@ -1,14 +1,15 @@
 
 ;; title: ex8-02
 ;; version: 1.0.0
-;; summary:
+;; summary: nft lottery contract
 
 ;; traits
 ;;
-(impl-trait .ex8-sip009.nft-trait)
+;; (impl-trait .ex8-sip009.nft-trait)
 
 ;; token definitions
 ;;
+(define-non-fungible-token LotteryTicket uint)
 
 ;; constants
 ;;
@@ -16,17 +17,74 @@
 ;; data vars
 ;;
 
+(define-data-var ticketCounter uint u0)
+(define-data-var ticketPrice uint u1000000) ;; 1 STX
+
+(define-data-var lotteryPeriod uint u144) ;; 144 blocks (~1 day)s
+(define-data-var lotteryStartHeight uint block-height) ;; start when deployed
+
 ;; data maps
 ;;
+
+;; track round info
+(define-map LotteryRound
+  uint
+  {
+    ticketsSold: uint,
+    stxInPool: uint,
+    winner: (optional principal)
+  }
+)
+
+;; track user info
+(define-map UserTickets
+  principal
+  {
+    tickets: uint,
+    lastRound: uint,
+    totalWon: uint,
+  }
+)
 
 ;; public functions
 ;;
 
+(define-public (buy-ticket)
+  ;; we need to know current round
+  ;; mint nft to user
+  (ok true)
+)
+
+(define-public (select-winner)
+  ;; we need to know current round
+  ;; if round is not over, return error
+  ;; if winner is already selected, return error
+  ;; closes out the old round
+  (ok true)
+)
+
+(define-public (claim-prize)
+  ;; we need to know current round
+  ;; if round is not over, return error
+  ;; if winner is not selected, return error (or select one?)
+  ;; if winner is not caller, return error
+  ;; burn nft
+  ;; transfer prize to winner
+  (ok true)
+)
+
 ;; read only functions
 ;;
+(define-read-only (get-lottery-round)
+  ;; ain't clairty math fun?
+  (ok (+ (/ (- block-height (var-get lotteryStartHeight)) (var-get lotteryPeriod)) u1))
+)
 
 ;; private functions
 ;;
+
+;; 10. Your task is to create a simple NFT lottery contract where users can purchase
+;; lottery tickets (as NFTs) by sending STX. Your contract must meet the requirements below.
 
 ;; Here are the requirements:
 ;; - Define an NFT for lottery tickets
@@ -41,23 +99,6 @@
 ;; ticket price is fixed at 1 STX
 ;; claiming prize burns the nft
 
-(define-non-fungible-token Ticket uint)
-
-(define-data-var ticketCounter uint u0)
-(define-data-var ticketPrice uint u1000000) ;; 1 STX
-(define-data-var lotteryPool uint u0)
-
-(define-public (buy-ticket)
-  ;; Implement ticket purchase logic here
-)
-
-(define-public (select-winner)
-  ;; Implement winner selection logic here (this can be hard coded, or however you prefer)
-)
-
-(define-public (claim-prize)
-  ;; Implement prize claiming logic here
-)
 
 ;; Test cases
 
