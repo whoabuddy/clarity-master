@@ -194,6 +194,8 @@
 ;; read only functions
 ;;
 
+;; lottery helpers
+
 (define-read-only (get-lottery-round)
   ;; ain't clairty math a hoot?
   (+ (/ (- block-height (var-get lotteryStartHeight)) (var-get lotteryPeriod)) u1)
@@ -206,7 +208,39 @@
   )
 )
 
-;; TODO: getters for each map
+;; data-var getters
+
+(define-read-only (get-ticket-count)
+  (ok (var-get ticketCount))
+)
+
+(define-read-only (get-ticket-price)
+  (ok (var-get ticketPrice))
+)
+
+(define-read-only (get-lottery-period)
+  (ok (var-get lotteryPeriod))
+)
+
+(define-read-only (get-lottery-start-height)
+  (ok (var-get lotteryStartHeight))
+)
+
+;; define-map getters
+
+(define-read-only (get-round-stats (round uint))
+  (ok (map-get? LotteryRounds round))
+)
+
+(define-read-only (get-user-stats (user principal))
+  (ok (map-get? UserStats user))
+)
+
+(define-read-only (get-user-round-stats (user principal) (round uint))
+  (ok (map-get? UserRounds { user: user, round: round }))
+)
+
+;; sip-009 functions
 
 (define-read-only (get-last-token-id)
   (ok (- (var-get lastId) u1))
@@ -219,26 +253,6 @@
 (define-read-only (get-owner (tokenId uint))
   (ok (nft-get-owner? LotteryTicket tokenId))
 )
-
-;; private functions
-;;
-
-;; 10. Your task is to create a simple NFT lottery contract where users can purchase
-;; lottery tickets (as NFTs) by sending STX. Your contract must meet the requirements below.
-
-;; Here are the requirements:
-;; - Define an NFT for lottery tickets
-;; - Create a function to purchase a ticket by sending STX
-;; - Create a function to select a winner (does not need to be random)
-;; - Allow the winner to claim their prize
-
-;; rounds happen every so many blocks (say 144)
-;; map of round number to total tickets (also total STX if mutiplied)
-;; each round has a winner determined after round ends (+1 block)
-;; winner gets ???
-;; ticket price is fixed at 1 STX
-;; claiming prize burns the nft
-
 
 ;; Test cases
 
