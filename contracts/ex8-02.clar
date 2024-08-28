@@ -26,24 +26,32 @@
 ;; data maps
 ;;
 
-;; track round info
-(define-map LotteryRound
+;; track stats per round
+(define-map LotteryRounds
   uint
   {
-    ticketsSold: uint,
+    firstNftId: uint,
     stxInPool: uint,
+    ticketsSold: uint,
     winner: (optional principal)
   }
 )
 
-;; track user info
-(define-map UserTickets
+;; track stats per user
+(define-map UserStats
   principal
   {
-    tickets: uint,
     lastRound: uint,
+    totalStxSpent: uint,
+    totalTickets: uint,
     totalWon: uint,
   }
+)
+
+;; track stats per user per round
+(define-map UserRounds
+  { user: principal, round: uint }
+  { tickets: uint, stxSpent: uint }
 )
 
 ;; public functions
