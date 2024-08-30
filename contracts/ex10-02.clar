@@ -1,18 +1,7 @@
 
 ;; title: ex10-02
-;; version:
-;; summary:
-;; description:
-
-;; For this challenge, your task is to:
-;; - Write another contract that demonstrates how you could potentially exploit the
-;;   vulnerable fundraising contract.
-;; - Provide a fix to the existing vulnerable contract, protecting it against your exploit.
-
-;; Steps
-;; 1. The vulnerable contract should be deployed at `contract-0`, so make sure to reference it.
-;; 2. Write your contract attempting to exploit the vulnerable contract.
-;; 3. Deploy an updated vulnerable contract with the necessary changes that would prevent your exploit
+;; version: 1.0.0
+;; summary: Vulnerable to greed
 
 ;; constants
 ;;
@@ -49,6 +38,8 @@
       (campaignId (var-get nextCampaignId))
     )
     (begin
+      ;; FYI could move stx-transfer? to last call so try! isn't needed
+      ;; and var-set would be it's own line, no need for (ok ...)
       (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
       (map-set Campaigns campaignId {
         title: title,
@@ -69,6 +60,7 @@
 )
 
 ;; Only the `contractOwner` can control the withdraw of funds
+;; VULNERABILITY: campaign funds can be withdrawn more than once
 (define-public (withdraw-funds (campaignId uint) (destinationAddress principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contractOwner)) ERR_ONLY_OWNER)

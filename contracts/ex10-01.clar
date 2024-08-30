@@ -3,9 +3,6 @@
 ;; version: 1.0.0
 ;; summary: Make it work, then make it cheap!
 
-;; constants
-;;
-
 ;; data vars
 ;;
 
@@ -26,24 +23,27 @@
 ;; public functions
 ;;
 
-;; There are some unnecessary expressions used in this function, remove them 
+;; There are some unnecessary expressions used in this function, remove them
 (define-public (create-proposal (title (string-ascii 50)) (description (string-ascii 250)))
-  (begin
-    (let
-      (
-        (nextProposalId (var-get proposalId))
-      )
-      (map-set Proposals nextProposalId {
-        title: title,
-        description: description,
-        proposedBy: tx-sender,
-        startAtBlockHeight: (+ block-height u144),
-        endAtBlockHeight: (+ block-height u1008),
-        execute: false
-      })
-      (var-set proposalId (+ (var-get proposalId) u1))
-      (ok true)
+  ;; we don't need begin before let
+  (let
+    (
+      ;; technically we could shorten this to ID
+      ;; but sometimes descriptive names are better
+      (nextProposalId (var-get proposalId))
     )
+    (map-set Proposals nextProposalId {
+      title: title,
+      description: description,
+      proposedBy: tx-sender,
+      startAtBlockHeight: (+ block-height u144),
+      endAtBlockHeight: (+ block-height u1008),
+      execute: false
+    })
+    ;; we don't need to get proposalID again here
+    ;; and since var-set returns true we can merge
+    ;; it with the ok response
+    (ok (var-set proposalId (+ nextProposalId u1)))
   )
 )
 
@@ -54,11 +54,15 @@
 (define-read-only (get-proposal (id uint))
   (let
     (
-      (title (get title (map-get? Proposals id)))
-      (description (get description (map-get? Proposals id)))
-      (proposedBy (get proposedBy (map-get? Proposals id)))
+      ;; get the proposal map once to re-use
+      (proposal (map-get? Proposals id))
     )
-    { title: title, description: description, proposedBy: proposedBy }
+    ;; set the tuple values using get
+    {
+      title: (get title proposal),
+      description: (get description proposal),
+      proposedBy: (get proposedBy proposal),
+    }
   )
 )
 

@@ -1,18 +1,7 @@
 
 ;; title: ex10-02
-;; version:
-;; summary:
-;; description:
-
-;; For this challenge, your task is to:
-;; - Write another contract that demonstrates how you could potentially exploit the
-;;   vulnerable fundraising contract.
-;; - Provide a fix to the existing vulnerable contract, protecting it against your exploit.
-
-;; Steps
-;; 1. The vulnerable contract should be deployed at `contract-0`, so make sure to reference it.
-;; 2. Write your contract attempting to exploit the vulnerable contract.
-;; 3. Deploy an updated vulnerable contract with the necessary changes that would prevent your exploit
+;; version: 1.0.0
+;; summary: Invulnerable to greed
 
 ;; constants
 ;;
@@ -20,6 +9,7 @@
 (define-constant ERR_ONLY_OWNER (err u100))
 (define-constant ERR_CAMPAIGN_DOES_NOT_EXISTS (err u101))
 (define-constant ERR_CAMPAIGN_NOT_OVER (err u102))
+(define-constant ERR_CAMPAIGN_ALREADY_CLAIMED (err u103))
 
 ;; data vars
 ;;
@@ -36,7 +26,9 @@
     title: (string-ascii 50),
     proposedBy: principal,
     fundsRaised: uint,
-    endsAtBlockHeight: uint
+    endsAtBlockHeight: uint,
+    ;; add value to track if claimed
+    claimed: bool,
   }
 )
 
@@ -54,7 +46,9 @@
         title: title,
         proposedBy: tx-sender,
         fundsRaised: amount,
-        endsAtBlockHeight: (+ block-height u144)
+        endsAtBlockHeight: (+ block-height u144),
+        ;; set claimed to false
+        claimed: false,
       })
       (ok (var-set nextCampaignId (+ campaignId u1)))
     )
@@ -70,9 +64,16 @@
 
 ;; Only the `contractOwner` can control the withdraw of funds
 (define-public (withdraw-funds (campaignId uint) (destinationAddress principal))
-  (begin
+  (let
+    (
+      (campaign (get-campaign campaignId))
+    )
+    (asserts! (is-some campaign) ERR_CAMPAIGN_DOES_NOT_EXISTS)
     (asserts! (is-eq tx-sender (var-get contractOwner)) ERR_ONLY_OWNER)
-    (asserts! (is-some (get-campaign campaignId)) ERR_CAMPAIGN_DOES_NOT_EXISTS)
+    ;; add check to see if campaign is claimed
+    (asserts! (is-eq false (unwrap-panic (get claimed (get-campaign campaignId)))) ERR_CAMPAIGN_ALREADY_CLAIMED)
+    ;; set claimed to true
+    (map-set Campaigns campaignId (merge (unwrap-panic campaign) { claimed: true }))
     (if (>= block-height (unwrap-panic (get endsAtBlockHeight (get-campaign campaignId))))
       (as-contract (stx-transfer? (unwrap-panic (get fundsRaised (get-campaign campaignId))) tx-sender destinationAddress))
       ERR_CAMPAIGN_NOT_OVER
