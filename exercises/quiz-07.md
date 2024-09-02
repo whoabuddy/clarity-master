@@ -1,0 +1,121 @@
+# Quiz 7: Fungible Tokens
+
+1. Which of the following is NOT a required function in the SIP-010 fungible token standard?
+   a) `get-name`
+   b) `get-symbol`
+   c) `get-decimals`
+   d) `get-max-supply`
+
+2. True or False: In a SIP-010 compliant fungible token contract, the transfer function **_can_** be called by any `principal` to transfer tokens they do not own.
+
+3. When implementing a SIP-010 fungible token, what is the correct way to handle the memo parameter in the transfer function?
+   a) Always print the memo, even if it's `none`
+   b) Ignore the memo parameter entirely
+   c) Use `unwrap!` to extract and print the memo
+   d) Use `match` to conditionally print the memo if it's not none
+
+4. True or False: In Clarity, it's possible to implement a token contract where the total supply can be increased after the initial deployment without using an explicit mint function.
+
+5. In a SIP-010 compliant fungible token contract, what should the get-balance function return?
+   a) (response uint uint)
+   b) uint
+   c) (optional uint)
+   d) (response (optional uint) uint)
+
+6. Which of the following is TRUE about the ft-mint? function in Clarity?
+   a) It can only be called by the contract owner
+   b) It automatically updates the total supply
+   c) It can mint tokens to any principal
+   d) It returns a boolean indicating success or failure
+
+7. Which of the following statements about setting a maximum supply for a fungible token in Clarity is TRUE?
+   a) A separate `set-max-supply` function must be implemented to limit the total supply
+   b) The maximum supply must be set using the `define-fungible-token` function
+   c) The maximum supply can be dynamically adjusted after contract deployment
+   d) Clarity does not allow setting a maximum supply for fungible tokens
+
+8. True or False: In a Clarity fungible token contract, it's possible to mint tokens beyond the maximum supply if the define-fungible-token function is called with a maximum supply parameter.
+
+**Bonus Coding Challenges**
+
+9. Here's a buggy fungible token contract. Your task is to make the provided test cases fail.
+
+   ```clojure
+   (define-fungible-token SimpleToken u1000000)
+
+   (define-data-var tokenName (string-utf8 32) u"SimpleToken")
+
+   (define-public (mint (amount uint) (recipient principal))
+     (ft-mint? SimpleToken amount recipient)
+   )
+
+   (define-public (transfer (amount uint) (sender principal) (recipient principal))
+     (ft-transfer? SimpleToken amount sender recipient)
+   )
+
+   (define-read-only (get-balance (account principal))
+     (ft-get-balance SimpleToken account)
+   )
+
+   (define-public (burn (amount uint) (burner principal))
+     (ft-burn? SimpleToken amount burner)
+   )
+
+   (define-read-only (get-total-supply)
+     (ft-get-supply SimpleToken)
+   )
+
+   ;; Test cases
+   ;; (mint u100 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5) ;; This should fail
+   ;; (burn u10 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5) ;; This should fail
+   ```
+
+   [Problem](https://play.hiro.so/?epoch=2.5&snippet=KGRlZmluZS1mdW5naWJsZS10b2tlbiBTaW1wbGVUb2tlbiB1MTAwMDAwMCkKCihkZWZpbmUtZGF0YS12YXIgdG9rZW5OYW1lIChzdHJpbmctdXRmOCAzMikgdSJTaW1wbGVUb2tlbiIpCgooZGVmaW5lLXB1YmxpYyAobWludCAoYW1vdW50IHVpbnQpIChyZWNpcGllbnQgcHJpbmNpcGFsKSkKICAoZnQtbWludD8gU2ltcGxlVG9rZW4gYW1vdW50IHJlY2lwaWVudCkKKQoKKGRlZmluZS1wdWJsaWMgKHRyYW5zZmVyIChhbW91bnQgdWludCkgKHNlbmRlciBwcmluY2lwYWwpIChyZWNpcGllbnQgcHJpbmNpcGFsKSkKICAoZnQtdHJhbnNmZXI_IFNpbXBsZVRva2VuIGFtb3VudCBzZW5kZXIgcmVjaXBpZW50KQopCgooZGVmaW5lLXJlYWQtb25seSAoZ2V0LWJhbGFuY2UgKGFjY291bnQgcHJpbmNpcGFsKSkKICAoZnQtZ2V0LWJhbGFuY2UgU2ltcGxlVG9rZW4gYWNjb3VudCkKKQoKKGRlZmluZS1wdWJsaWMgKGJ1cm4gKGFtb3VudCB1aW50KSAoYnVybmVyIHByaW5jaXBhbCkpCiAgKGZ0LWJ1cm4_IFNpbXBsZVRva2VuIGFtb3VudCBidXJuZXIpCikKCihkZWZpbmUtcmVhZC1vbmx5IChnZXQtdG90YWwtc3VwcGx5KQogIChmdC1nZXQtc3VwcGx5IFNpbXBsZVRva2VuKQopCgo7OyBUZXN0IGNhc2VzCjs7IChtaW50IHUxMDAgJ1NUMVNKM0RURTVETjdYNTRZREg1RDY0UjNCQ0I2QTJBRzJaUThZUEQ1KSA7OyBUaGlzIHNob3VsZCBmYWlsCjs7IChidXJuIHUxMCAnU1QxU0ozRFRFNURON1g1NFlESDVENjRSM0JDQjZBMkFHMlpROFlQRDUpIDs7IFRoaXMgc2hvdWxkIGZhaWw)
+
+   [Solution](https://play.hiro.so/?epoch=2.5&snippet=KGRlZmluZS1mdW5naWJsZS10b2tlbiBTaW1wbGVUb2tlbiB1MTAwMDAwMCkKCihkZWZpbmUtZGF0YS12YXIgdG9rZW5OYW1lIChzdHJpbmctdXRmOCAzMikgdSJTaW1wbGVUb2tlbiIpCgooZGVmaW5lLXB1YmxpYyAobWludCAoYW1vdW50IHVpbnQpIChyZWNpcGllbnQgcHJpbmNpcGFsKSkKICAoYmVnaW4KICAgIChhc3NlcnRzISAoaXMtZXEgdHgtc2VuZGVyIHJlY2lwaWVudCkgKGVyciB1NDAxKSkKICAgIChmdC1taW50PyBTaW1wbGVUb2tlbiBhbW91bnQgcmVjaXBpZW50KQogICkKKQoKKGRlZmluZS1wdWJsaWMgKHRyYW5zZmVyIChhbW91bnQgdWludCkgKHNlbmRlciBwcmluY2lwYWwpIChyZWNpcGllbnQgcHJpbmNpcGFsKSAobWVtbyAob3B0aW9uYWwgKGJ1ZmYgMzQpKSkpCiAgKGJlZ2luCiAgICAoYXNzZXJ0cyEgKGlzLWVxIHR4LXNlbmRlciBzZW5kZXIpIChlcnIgdTQwMSkpCiAgICAodHJ5ISAoZnQtdHJhbnNmZXI_IFNpbXBsZVRva2VuIGFtb3VudCBzZW5kZXIgcmVjaXBpZW50KSkKICAgIChtYXRjaCBtZW1vIHRvLXByaW50IChwcmludCB0by1wcmludCkgMHgpCiAgICAob2sgdHJ1ZSkKICApCikKCihkZWZpbmUtcmVhZC1vbmx5IChnZXQtYmFsYW5jZSAoYWNjb3VudCBwcmluY2lwYWwpKQogIChmdC1nZXQtYmFsYW5jZSBTaW1wbGVUb2tlbiBhY2NvdW50KQopCgooZGVmaW5lLXB1YmxpYyAoYnVybiAoYW1vdW50IHVpbnQpIChidXJuZXIgcHJpbmNpcGFsKSkKICAoYmVnaW4KICAgIChhc3NlcnRzISAoaXMtZXEgdHgtc2VuZGVyIGJ1cm5lcikgKGVyciB1NDAxKSkKICAgIChmdC1idXJuPyBTaW1wbGVUb2tlbiBhbW91bnQgYnVybmVyKQogICkKKQoKKGRlZmluZS1yZWFkLW9ubHkgKGdldC10b3RhbC1zdXBwbHkpCiAgKGZ0LWdldC1zdXBwbHkgU2ltcGxlVG9rZW4pCik)
+
+10. Create an implementation of a token faucet that allows users to claim a certain amount of tokens, but with a time-based limit
+
+    ```clojure
+    ;; Define your SIP10 trait (and make sure to deploy it first)
+    ;; Implement your SIP10 contract here (look into the `impl-trait` function)
+
+    (define-fungible-token FaucetToken)
+
+    (define-constant CONTRACT_OWNER tx-sender)
+    (define-constant TOKEN_NAME "The Faucet")
+    (define-constant TOKEN_SYMBOL "DRIP")
+    (define-constant TOKEN_DECIMALS u6)
+
+    (define-map LastClaimedAtBlock principal uint)
+
+    ;; SIP-010 functions
+    ;; Implement: transfer, get-name, get-symbol, get-decimals, get-balance, get-total-supply, get-token-uri
+
+    ;; Faucet functions
+    (define-public (claim)
+      ;; Implement the claim function
+    )
+
+    (define-read-only (time-until-next-claim (user principal))
+      ;; Implement the time check function
+    )
+
+    ;; Helper functions
+    (define-private (is-claim-allowed (user principal))
+      ;; Implement the claim allowance check
+    )
+    ```
+
+    Here are the requirements:
+
+
+     - Use the SIP-010 fungible token standard.
+     - Implement a faucet function that allows users to claim 100 tokens.
+     - Users can only claim tokens once every 24 hours.
+     - Keep track of the last claim time for each user.
+     - Implement a function to check when a user can claim again.
+
+     [Problem](https://play.hiro.so/?epoch=2.5&snippet=OzsgTk9URTogRGVmaW5lIHlvdXIgU0lQMTAgdHJhaXQgKGFuZCBtYWtlIHN1cmUgdG8gZGVwbG95IGl0IGJlZm9yZSBkZXBsb3lpbmcgeW91ciB0b2tlbiBjb250cmFjdCkKOzsgSW1wbGVtZW50IHlvdXIgU0lQMTAgY29udHJhY3QgaGVyZSAobG9vayBpbnRvIHRoZSBgaW1wbC10cmFpdGAgZnVuY3Rpb24pCgooZGVmaW5lLWZ1bmdpYmxlLXRva2VuIEZhdWNldFRva2VuKQoKKGRlZmluZS1jb25zdGFudCBDT05UUkFDVF9PV05FUiB0eC1zZW5kZXIpCihkZWZpbmUtY29uc3RhbnQgVE9LRU5fTkFNRSAiVGhlIEZhdWNldCIpCihkZWZpbmUtY29uc3RhbnQgVE9LRU5fU1lNQk9MICJEUklQIikKKGRlZmluZS1jb25zdGFudCBUT0tFTl9ERUNJTUFMUyB1NikKKGRlZmluZS1jb25zdGFudCBDTEFJTV9BTU9VTlQgdTEwMDAwMDAwMCkgOzsgMTAwIHRva2VucyB3aXRoIDYgZGVjaW1hbHMKKGRlZmluZS1jb25zdGFudCBCTE9DS1NfQkVUV0VFTl9DTEFJTVMgdTE0NCkgOzsgQXBwcm94aW1hdGVseSAyNCBob3VycyAoYXNzdW1pbmcgMTAtbWludXRlIGJsb2NrIHRpbWVzKQoKKGRlZmluZS1tYXAgTGFzdENsYWltZWRBdEJsb2NrIHByaW5jaXBhbCB1aW50KQoKOzsgU0lQLTAxMCBmdW5jdGlvbnMKOzsgSW1wbGVtZW50OiB0cmFuc2ZlciwgZ2V0LW5hbWUsIGdldC1zeW1ib2wsIGdldC1kZWNpbWFscywgZ2V0LWJhbGFuY2UsIGdldC10b3RhbC1zdXBwbHksIGdldC10b2tlbi11cmkKCjs7IEZhdWNldCBmdW5jdGlvbnMKKGRlZmluZS1wdWJsaWMgKGNsYWltKQogIDs7IEltcGxlbWVudCB0aGUgY2xhaW0gZnVuY3Rpb24KKQoKKGRlZmluZS1yZWFkLW9ubHkgKHRpbWUtdW50aWwtbmV4dC1jbGFpbSAodXNlciBwcmluY2lwYWwpKQogIDs7IEltcGxlbWVudCB0aGUgdGltZSBjaGVjayBmdW5jdGlvbgopCgo7OyBIZWxwZXIgZnVuY3Rpb25zCihkZWZpbmUtcHJpdmF0ZSAoaXMtY2xhaW0tYWxsb3dlZCAodXNlciBwcmluY2lwYWwpKQogIDs7IEltcGxlbWVudCB0aGUgY2xhaW0gYWxsb3dhbmNlIGNoZWNrCikKCjs7IFRlc3QgY2FzZXMKCjs7IFRlc3QgU0lQLTAxMCBmdW5jdGlvbnMKOzsgKHByaW50IChnZXQtbmFtZSkpCjs7IChwcmludCAoZ2V0LXN5bWJvbCkpCjs7IChwcmludCAoZ2V0LWRlY2ltYWxzKSkKOzsgKHByaW50IChnZXQtYmFsYW5jZSB0eC1zZW5kZXIpKQo7OyAocHJpbnQgKGdldC10b3RhbC1zdXBwbHkpKQo7OyAocHJpbnQgKGdldC10b2tlbi11cmkpKQoKOzsgVGVzdCBjbGFpbSBmdW5jdGlvbgo7OyAocHJpbnQgKGNsYWltKSkKOzsgKHByaW50IChnZXQtYmFsYW5jZSB0eC1zZW5kZXIpKQo7OyAocHJpbnQgKGNsYWltKSkgOzsgU2hvdWxkIGZhaWwgaWYgY2FsbGVkIHR3aWNlIGluIGEgcm93Cgo7OyBUZXN0IHRpbWUtdW50aWwtbmV4dC1jbGFpbSBmdW5jdGlvbgo7OyAocHJpbnQgKHRpbWUtdW50aWwtbmV4dC1jbGFpbSB0eC1zZW5kZXIpKQoKOzsgVGVzdCB0cmFuc2ZlciBmdW5jdGlvbgo7OyAoZGVmaW5lLWNvbnN0YW50IHJlY2lwaWVudCAnU1QxSjRHNlJSNjQzQkNHOEc4U1I2TTJEOVo5S1hUMk5KRFJLM0ZCVEspCjs7IChwcmludCAodHJhbnNmZXIgdTUwMDAwMDAwIHR4LXNlbmRlciByZWNpcGllbnQgbm9uZSkpCjs7IChwcmludCAoZ2V0LWJhbGFuY2UgdHgtc2VuZGVyKSkKOzsgKHByaW50IChnZXQtYmFsYW5jZSByZWNpcGllbnQpKQoKOzsgQWR2YW5jZWQgdGVzdDogTXVsdGlwbGUgdXNlcnMKOzsgKGRlZmluZS1jb25zdGFudCB1c2VyMiAnU1QyQ1k1VjM5TkhEUFdTWE1XOVFEVDNIQzNHRDZRNlhYNENGUks5QUcpCjs7IChwcmludCAoYXMtY29udHJhY3QgKHRyYW5zZmVyIENMQUlNX0FNT1VOVCB0eC1zZW5kZXIgdXNlcjIgbm9uZSkpKQo7OyAocHJpbnQgKGdldC1iYWxhbmNlIHVzZXIyKSkKOzsgKHByaW50IChhcy1jb250cmFjdCAoY2xhaW0pKSkKOzsgKHByaW50IChhcy1jb250cmFjdCAodGltZS11bnRpbC1uZXh0LWNsYWltIHR4LXNlbmRlcikpKQ)
+
+     [Solution](https://play.hiro.so/?epoch=2.5&snippet=OzsgSW1wbGVtZW50IHlvdXIgU0lQMTAgY29udHJhY3QgaGVyZSAobG9vayBpbnRvIHRoZSBgaW1wbC10cmFpdGAgZnVuY3Rpb24pCihpbXBsLXRyYWl0IC5jb250cmFjdC0xLnNpcC0wMTAtdHJhaXQpCgooZGVmaW5lLWZ1bmdpYmxlLXRva2VuIEZhdWNldFRva2VuKQoKKGRlZmluZS1jb25zdGFudCBDT05UUkFDVF9PV05FUiB0eC1zZW5kZXIpCihkZWZpbmUtY29uc3RhbnQgVE9LRU5fTkFNRSAiVGhlIEZhdWNldCIpCihkZWZpbmUtY29uc3RhbnQgVE9LRU5fU1lNQk9MICJEUklQIikKKGRlZmluZS1jb25zdGFudCBUT0tFTl9ERUNJTUFMUyB1NikKKGRlZmluZS1jb25zdGFudCBDTEFJTV9BTU9VTlQgdTEwMDAwMDAwMCkgOzsgMTAwIHRva2VucyB3aXRoIDYgZGVjaW1hbHMKKGRlZmluZS1jb25zdGFudCBCTE9DS1NfQkVUV0VFTl9DTEFJTVMgdTE0NCkgOzsgQXBwcm94aW1hdGVseSAyNCBob3VycyAoYXNzdW1pbmcgMTAtbWludXRlIGJsb2NrIHRpbWVzKQoKKGRlZmluZS1tYXAgTGFzdENsYWltZWRBdEJsb2NrIHByaW5jaXBhbCB1aW50KQoKOzsgU0lQLTAxMCBmdW5jdGlvbnMKKGRlZmluZS1wdWJsaWMgKHRyYW5zZmVyIChhbW91bnQgdWludCkgKHNlbmRlciBwcmluY2lwYWwpIChyZWNpcGllbnQgcHJpbmNpcGFsKSAobWVtbyAob3B0aW9uYWwgKGJ1ZmYgMzQpKSkpCiAgKGJlZ2luCiAgICAoYXNzZXJ0cyEgKGlzLWVxIHR4LXNlbmRlciBzZW5kZXIpIChlcnIgdTQpKQogICAgKGZ0LXRyYW5zZmVyPyBGYXVjZXRUb2tlbiBhbW91bnQgc2VuZGVyIHJlY2lwaWVudCkKICApCikKCihkZWZpbmUtcmVhZC1vbmx5IChnZXQtbmFtZSkKICAob2sgVE9LRU5fTkFNRSkKKQoKKGRlZmluZS1yZWFkLW9ubHkgKGdldC1zeW1ib2wpCiAgKG9rIFRPS0VOX1NZTUJPTCkKKQoKKGRlZmluZS1yZWFkLW9ubHkgKGdldC1kZWNpbWFscykKICAob2sgVE9LRU5fREVDSU1BTFMpCikKCihkZWZpbmUtcmVhZC1vbmx5IChnZXQtYmFsYW5jZSAod2hvIHByaW5jaXBhbCkpCiAgKG9rIChmdC1nZXQtYmFsYW5jZSBGYXVjZXRUb2tlbiB3aG8pKQopCgooZGVmaW5lLXJlYWQtb25seSAoZ2V0LXRvdGFsLXN1cHBseSkKICAob2sgKGZ0LWdldC1zdXBwbHkgRmF1Y2V0VG9rZW4pKQopCgooZGVmaW5lLXJlYWQtb25seSAoZ2V0LXRva2VuLXVyaSkKICAob2sgbm9uZSkKKQoKOzsgRmF1Y2V0IGZ1bmN0aW9ucwooZGVmaW5lLXB1YmxpYyAoY2xhaW0pCiAgKGxldCAKICAgICgKICAgICAgKGNhbGxlciB0eC1zZW5kZXIpCiAgICApCiAgICAoYXNzZXJ0cyEgKGlzLWNsYWltLWFsbG93ZWQgY2FsbGVyKSAoZXJyIHUxKSkKICAgICh0cnkhIChmdC1taW50PyBGYXVjZXRUb2tlbiBDTEFJTV9BTU9VTlQgY2FsbGVyKSkKICAgIChtYXAtc2V0IExhc3RDbGFpbWVkQXRCbG9jayBjYWxsZXIgYmxvY2staGVpZ2h0KQogICAgKG9rIHRydWUpCiAgKQopCgooZGVmaW5lLXJlYWQtb25seSAodGltZS11bnRpbC1uZXh0LWNsYWltICh1c2VyIHByaW5jaXBhbCkpCiAgKGxldAogICAgKAogICAgICAobGFzdENsYWltZWQgKGRlZmF1bHQtdG8gdTAgKG1hcC1nZXQ_IExhc3RDbGFpbWVkQXRCbG9jayB1c2VyKSkpCiAgICAgIChibG9ja3NTaW5jZUxhc3RDbGFpbSAoLSBibG9jay1oZWlnaHQgbGFzdC1jbGFpbWVkKSkKICAgICkKICAgIChpZiAoPj0gYmxvY2tzU2luY2VMYXN0Q2xhaW0gQkxPQ0tTX0JFVFdFRU5fQ0xBSU1TKQogICAgICB1MAogICAgICAoLSBCTE9DS1NfQkVUV0VFTl9DTEFJTVMgYmxvY2tzU2luY2VMYXN0Q2xhaW0pCiAgICApCiAgKQopCgo7OyBIZWxwZXIgZnVuY3Rpb25zCihkZWZpbmUtcHJpdmF0ZSAoaXMtY2xhaW0tYWxsb3dlZCAodXNlciBwcmluY2lwYWwpKQogIChsZXQKICAgICgKICAgICAgKGxhc3RDbGFpbWVkIChkZWZhdWx0LXRvIHUwIChtYXAtZ2V0PyBMYXN0Q2xhaW1lZEF0QmxvY2sgdXNlcikpKQogICAgICAoYmxvY2tzU2luY2VMYXN0Q2xhaW0gKC0gYmxvY2staGVpZ2h0IGxhc3RDbGFpbWVkKSkKICAgICkKICAgICg-PSBibG9ja3NTaW5jZUxhc3RDbGFpbSBCTE9DS1NfQkVUV0VFTl9DTEFJTVMpCiAgKQopCgo7OyBUZXN0IGNhc2VzICh1bmNvbW1lbnQgYW5kIHJ1biB0aGVzZSB0byBjaGVjayB5b3VyIGltcGxlbWVudGF0aW9uKQoKOzsgVGVzdCBTSVAtMDEwIGZ1bmN0aW9ucwo7OyAocHJpbnQgKGdldC1uYW1lKSkKOzsgKHByaW50IChnZXQtc3ltYm9sKSkKOzsgKHByaW50IChnZXQtZGVjaW1hbHMpKQo7OyAocHJpbnQgKGdldC1iYWxhbmNlIHR4LXNlbmRlcikpCjs7IChwcmludCAoZ2V0LXRvdGFsLXN1cHBseSkpCjs7IChwcmludCAoZ2V0LXRva2VuLXVyaSkpCgo7OyBUZXN0IGNsYWltIGZ1bmN0aW9uCjs7IChwcmludCAoY2xhaW0pKQo7OyAocHJpbnQgKGdldC1iYWxhbmNlIHR4LXNlbmRlcikpCjs7IChwcmludCAoY2xhaW0pKSA7OyBTaG91bGQgZmFpbCBpZiBjYWxsZWQgdHdpY2UgaW4gYSByb3cKCjs7IFRlc3QgdGltZS11bnRpbC1uZXh0LWNsYWltIGZ1bmN0aW9uCjs7IChwcmludCAodGltZS11bnRpbC1uZXh0LWNsYWltIHR4LXNlbmRlcikpCgo7OyBUZXN0IHRyYW5zZmVyIGZ1bmN0aW9uCjs7IChkZWZpbmUtY29uc3RhbnQgcmVjaXBpZW50ICdTVDFKNEc2UlI2NDNCQ0c4RzhTUjZNMkQ5WjlLWFQyTkpEUkszRkJUSykKOzsgKHByaW50ICh0cmFuc2ZlciB1NTAwMDAwMDAgdHgtc2VuZGVyIHJlY2lwaWVudCBub25lKSkKOzsgKHByaW50IChnZXQtYmFsYW5jZSB0eC1zZW5kZXIpKQo7OyAocHJpbnQgKGdldC1iYWxhbmNlIHJlY2lwaWVudCkpCgo7OyBBZHZhbmNlZCB0ZXN0OiBNdWx0aXBsZSB1c2Vycwo7OyAoZGVmaW5lLWNvbnN0YW50IHVzZXIyICdTVDJDWTVWMzlOSERQV1NYTVc5UURUM0hDM0dENlE2WFg0Q0ZSSzlBRykKOzsgKHByaW50IChhcy1jb250cmFjdCAodHJhbnNmZXIgQ0xBSU1fQU1PVU5UIHR4LXNlbmRlciB1c2VyMiBub25lKSkpCjs7IChwcmludCAoZ2V0LWJhbGFuY2UgdXNlcjIpKQo7OyAocHJpbnQgKGFzLWNvbnRyYWN0IChjbGFpbSkpKQo7OyAocHJpbnQgKGFzLWNvbnRyYWN0ICh0aW1lLXVudGlsLW5leHQtY2xhaW0gdHgtc2VuZGVyKSkp)
